@@ -8,23 +8,34 @@ load_dotenv()
 
 HOST = os.environ.get("ROUTER_HOST")
 
-# Router IP Address is 10.0.15.61-65
-api_url = f"https://{HOST}/restconf/data/ietf-interfaces:interfaces"
-
 # the RESTCONF HTTP headers, including the Accept and Content-Type
 # Two YANG data formats (JSON and XML) work with RESTCONF 
 headers = { "Accept": "application/yang-data+json", 
             "Content-type":"application/yang-data+json"
            }
+ROUTER_USER = os.environ.get("ROUTER_USER", "admin")
+ROUTER_PASS = os.environ.get("ROUTER_PASS", "cisco")
+basicauth = (ROUTER_USER, ROUTER_PASS)
 
-basicauth = ("admin", "cisco")
 studentID = "66070220"
-interfaceName = "Loopback66070220"
-call_url = f"{api_url}/interface={interfaceName}"
-api_url_check_status = f"https://{HOST}/restconf/data/ietf-interfaces:interfaces-state/interface={interfaceName}"
+interfaceName = f"Loopback{studentID}"
 
+def get_call_url(ip):
+    api_url = f"https://{ip}/restconf/data/ietf-interfaces:interfaces"
+    call_url = f"{api_url}/interface={interfaceName}"
+    return call_url
 
-def create():
+def get_url_status(ip):
+    api_url_check_status = f"https://{ip}/restconf/data/ietf-interfaces:interfaces-state/interface={interfaceName}"
+    return api_url_check_status
+
+def create(ip):
+    call_url = get_call_url(ip)
+
+    isExist = check_interface_is_exist(ip)
+    if isExist:
+        return "Cannot create: Interface loopback {}".format(studentID)
+
     yangConfig = {
             "ietf-interfaces:interface": {
             "name": interfaceName,
@@ -46,20 +57,27 @@ def create():
         data=json.dumps(yangConfig), 
         auth=basicauth,
         headers=headers, 
-        verify=False
+        verify=False,
+        timeout=10
     )
     
     if (resp.status_code == 204):
         return "Cannot create: Interface loopback {}".format(studentID)
     elif (resp.status_code >= 200 and resp.status_code <= 299):
         print("STATUS OK: {}".format(resp.status_code))
-        return "Interface loopback {} is created successfully".format(studentID)
+        return "Interface loopback {} is created successfully using Restconf".format(studentID)
     else:
         print('Error. Status Code: {}'.format(resp.status_code))
         return "Cannot create: Interface loopback {}".format(studentID)
 
 
-def delete():
+def delete(ip):
+    call_url = get_call_url(ip)
+
+    isExist = check_interface_is_exist(ip)
+    if not isExist:
+        return "Cannot delete: Interface loopback {}".format(studentID)
+
     resp = requests.delete(
         call_url, 
         auth=basicauth, 
@@ -69,15 +87,21 @@ def delete():
 
     if(resp.status_code >= 200 and resp.status_code <= 299):
         print("STATUS OK: {}".format(resp.status_code))
-        return "Interface loopback {} is deleted successfully".format(studentID)
+        return "Interface loopback {} is deleted successfully using Restconf".format(studentID)
     else:
         print('Error. Status Code: {}'.format(resp.status_code))
         return "Cannot delete: Interface loopback {}".format(studentID)
 
 
-def enable():
-    isExist = check_interface_is_exist()
+def enable(ip):
+    call_url = get_call_url(ip)
+
+    isExist = check_interface_is_exist(ip)
     if not (isExist):
+        return "Cannot enable: Interface loopback {}".format(studentID)
+
+    current_status = get_interface_status(ip)
+    if current_status and current_status['admin'] == 'up' and current_status['oper'] == 'up':
         return "Cannot enable: Interface loopback {}".format(studentID)
 
     yangConfig = {
@@ -98,16 +122,22 @@ def enable():
 
     if(resp.status_code >= 200 and resp.status_code <= 299):
         print("STATUS OK: {}".format(resp.status_code))
-        return "Interface loopback {} is enabled successfully".format(studentID)
+        return "Interface loopback {} is enabled successfully using Restconf".format(studentID)
     else:
         print('Error. Status Code: {}'.format(resp.status_code))
         return "Cannot enable: Interface loopback {}".format(studentID)
 
 
-def disable():
-    isExist = check_interface_is_exist()
+def disable(ip):
+    call_url = get_call_url(ip)
+
+    isExist = check_interface_is_exist(ip)
     if not (isExist):
         return "Cannot enable: Interface loopback {}".format(studentID)
+
+    current_status = get_interface_status(ip)
+    if current_status and current_status['admin'] == 'down' and current_status['oper'] == 'down':
+        return "Cannot shutdown: Interface loopback {} (checked by Restconf)".format(studentID)
 
     yangConfig = {
         "ietf-interfaces:interface": {
@@ -127,13 +157,15 @@ def disable():
 
     if(resp.status_code >= 200 and resp.status_code <= 299):
         print("STATUS OK: {}".format(resp.status_code))
-        return "Interface loopback {} is shutdowned successfully".format(studentID)
+        return "Interface loopback {} is shutdowned successfully using Restconf".format(studentID)
     else:
         print('Error. Status Code: {}'.format(resp.status_code))
         return "Cannot shutdown: Interface loopback {}".format(studentID)
 
 
-def status():
+def status(ip):
+    api_url_check_status = get_url_status(ip)
+
     resp = requests.get(
         api_url_check_status, 
         auth=basicauth, 
@@ -156,12 +188,32 @@ def status():
     else:
         print('Error. Status Code: {}'.format(resp.status_code))
 
-def check_interface_is_exist():
+def check_interface_is_exist(ip):
+    call_url = get_call_url(ip)
     check_interface = requests.get(
-        f"{api_url}/interface={interfaceName}", 
+        call_url,
         auth=basicauth,
         headers=headers,
         verify=False
     )
     
     return not (check_interface.status_code == 404)
+
+def get_interface_status(ip):
+    api_url_check_status = get_url_status(ip)
+    try:
+        resp = requests.get(
+            api_url_check_status, 
+            auth=basicauth, 
+            headers=headers, 
+            verify=False
+        )
+        
+        if resp.status_code >= 200 and resp.status_code <= 299:
+            response_json = resp.json()
+            admin_status = response_json["ietf-interfaces:interface"]["admin-status"]
+            oper_status = response_json["ietf-interfaces:interface"]["oper-status"]
+            return {'admin': admin_status, 'oper': oper_status}
+        return None
+    except:
+        return None
