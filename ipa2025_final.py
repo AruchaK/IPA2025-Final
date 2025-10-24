@@ -137,10 +137,12 @@ while True:
             ip = parts[1]
             command = parts[2]
 
-            if current_method is None:
-                responseMessage = "Error: No method specified"
-            elif not validate_ip(ip):
+            if not validate_ip(ip):
                 responseMessage = "Error: IP out of range"
+            elif command == "motd":
+                responseMessage = get_motd(ip)
+            elif current_method is None:
+                responseMessage = "Error: No method specified"
             else:
                 if current_method == Method.RESTCONF:
                     if command == "create":
@@ -168,9 +170,7 @@ while True:
                         responseMessage = netconf_final.status(ip)
                     else:
                         responseMessage = "Error: Unknown command"
-                elif command == "motd":
-                    responseMessage = get_motd(ip)
-        if len(parts) >= 4:
+        elif len(parts) >= 4:
             ip = parts[1]
             command = parts[2]
             motd_message = " ".join(parts[3:])
@@ -180,18 +180,19 @@ while True:
             else:
                 if command == "motd":
                     responseMessage = set_motd(ip, motd_message)
+                    print(f"Set motd response: {responseMessage}")
                 else:
                     responseMessage = "Error: Unknown command"
+
         # other commands only send text, or no attached file.
-        else:
-            postData =  {"roomId": roomIdToGetMessages, "text": responseMessage}
-            postData = json.dumps(postData)
+        postData =  {"roomId": roomIdToGetMessages, "text": responseMessage}
+        postData = json.dumps(postData)
 
             # the Webex Teams HTTP headers, including the Authoriztion and Content-Type
-            HTTPHeaders = {
-                "Authorization": "Bearer " + ACCESS_TOKEN,
-                "Content-Type": "application/json"
-            }
+        HTTPHeaders = {
+            "Authorization": "Bearer " + ACCESS_TOKEN,
+            "Content-Type": "application/json"
+        }
 
         
 # 6. Complete the code to post the message to the Webex Teams room.
