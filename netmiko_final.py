@@ -19,14 +19,11 @@ def get_motd(ip):
 
     try:
         with ConnectHandler(**device_params) as connection:
-            running_config = connection.send_command("show running-config", use_textfsm=False)
+            banner_output = connection.send_command("show banner motd", use_textfsm=False)
             
-            match = re.search(r"banner motd (.)(.*?)\1", running_config, re.DOTALL)
-            
-            if match:
-                return match.group(2)
+            if banner_output and banner_output.strip():
+                return banner_output.strip()
             else:
                 return "Error: No MOTD Configured"
-            
     except Exception as e:
-        return f"Error getting MOTD: {e}"
+        return "Error: No MOTD Configured"
