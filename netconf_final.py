@@ -8,33 +8,31 @@ import xmltodict
 import os
 
 load_dotenv()
+ROUTER_USER = os.environ.get("ROUTER_USER")
+ROUTER_PASS = os.environ.get("ROUTER_PASS")
+STUDENT_ID = "66070220"
+INTERFACE_NAME = f"Loopback{STUDENT_ID}"
 
-m = manager.connect(
-        host=os.environ.get("ROUTER_HOST"),
-        port=830,
-        username=os.environ.get("ROUTER_USER"),
-        password=os.environ.get("ROUTER_PASS"),
-        hostkey_verify=False
-    )
-
+def connect(ip):
+    return manager.connect(host=ip, port=830, username=ROUTER_USER, password=ROUTER_PASS, hostkey_verify=False, timeout=10)
 
 # --------------------------------------------------------------
 # Core functions
 # --------------------------------------------------------------
 
 # Create Loopback66070220 interface
-def create():
+def create(ip):
     # Define Netconf configuration for creating Loopback66070220 interface
-    netconf_config = """
+    netconf_config = f"""
         <config>
             <interfaces xmlns="urn:ietf:params:xml:ns:yang:ietf-interfaces">
                 <interface>
-                    <name>Loopback66070220</name>
-                    <description>66070220 Loopback interface</description>
+                    <name>{INTERFACE_NAME}</name>
+                    <description>{STUDENT_ID} Loopback interface</description>
                     <type xmlns:ianaift="urn:ietf:params:xml:ns:yang:iana-if-type">ianaift:softwareLoopback</type>
                     <ipv4 xmlns="urn:ietf:params:xml:ns:yang:ietf-ip">
                         <address>
-                            <ip>172.2.17.1</ip>
+                            <ip>172.2.20.1</ip>
                             <netmask>255.255.255.0</netmask>
                         </address>
                     </ipv4>
@@ -44,59 +42,51 @@ def create():
     """
 
     try:
-        # Check if interface Loopback66070220 already exists
         checkExist = check_interface_exist()
-        if (checkExist):
-            raise Exception("Interface already exist.")
-        
-        # Apply Netconf edit-config operation to create the interface
-        netconf_reply = netconf_edit_config(netconf_config)
-        xml_data = netconf_reply.xml
-        print(xml_data)
-        if ('<ok/>' in xml_data):
-            return "Interface loopback 66070220 is created successfully"
-    except:
-        print("Error!")
-        return "Cannot create: Interface loopback 66070220"
+        if not (checkExist):
+            raise Exception(f"Cannot create: Interface loopback {STUDENT_ID}")
+        with connect(ip) as m:
+            netconf_reply = m.edit_config(target="running", config=netconf_config)
+            if "<ok/>" in str(netconf_reply): 
+                return f"Interface loopback {STUDENT_ID} is created successfully using Netconf"
+        return f"Cannot create: Interface loopback {STUDENT_ID}"
+    except: 
+        return f"Cannot create: Interface loopback {STUDENT_ID}"
 
 
 # Delete Loopback66070220 interface
-def delete():
+def delete(ip):
     # Define Netconf configuration for deleting Loopback66070220 interface
-    netconf_config = """
+    netconf_config = f"""
         <config>
             <interfaces xmlns="urn:ietf:params:xml:ns:yang:ietf-interfaces">
                 <interface operation="delete">
-                    <name>Loopback66070220</name>
+                    <name>{INTERFACE_NAME}</name>
                 </interface>
             </interfaces>
         </config>
     """
 
     try:
-        # Check if interface Loopback66070220 exists
         checkExist = check_interface_exist()
         if not (checkExist):
-            raise Exception("Interface Loopback66070220 doesn't exist")
-        
-        # Apply Netconf edit-config operation to delete the interface
-        netconf_reply = netconf_edit_config(netconf_config)
-        xml_data = netconf_reply.xml
-        print(xml_data)
-        if '<ok/>' in xml_data:
-            return "Interface loopback 66070220 is deleted successfully"
-    except:
-        print("Error!")
-        return "Cannot delete: Interface loopback 66070220"
+            raise Exception(f"Cannot delete: Interface loopback {STUDENT_ID}")
+        with connect(ip) as m:
+            netconf_reply = m.edit_config(target="running", config=netconf_config)
+            if "<ok/>" in str(netconf_reply): 
+                return f"Interface loopback {STUDENT_ID} is deleted successfully using Netconf"
+        return f"Cannot delete: Interface loopback {STUDENT_ID}"
+    except: return f"Cannot delete: Interface loopback {STUDENT_ID}"
+
 
 # Enable Loopback66070220 interface
-def enable():
+def enable(ip):
     # Define Netconf configuration for enabling Loopback66070220 interface
-    netconf_config = """
+    netconf_config = f"""
         <config>
             <interfaces xmlns="urn:ietf:params:xml:ns:yang:ietf-interfaces">
                 <interface>
-                    <name>Loopback66070220</name>
+                    <name>{INTERFACE_NAME}</name>
                     <type xmlns:ianaift="urn:ietf:params:xml:ns:yang:iana-if-type">ianaift:softwareLoopback</type>
                     <enabled>true</enabled>
                 </interface>
@@ -105,29 +95,25 @@ def enable():
     """
 
     try:
-        # Check if interface Loopback66070220 exists
         checkExist = check_interface_exist()
         if not (checkExist):
-            raise Exception("Interface Loopback66070220 doesn't exist")
-        
-        # Apply Netconf edit-config operation to enable the interface
-        netconf_reply = netconf_edit_config(netconf_config)
-        xml_data = netconf_reply.xml
-        print(xml_data)
-        if '<ok/>' in xml_data:
-            return "Interface loopback 66070220 is enabled successfully"
-    except:
-        print("Error!")
-        return "Cannot enable: Interface loopback 66070220"
+            raise Exception(f"Cannot enable: Interface loopback {STUDENT_ID}")
+        with connect(ip) as m:
+            netconf_reply = m.edit_config(target="running", config=netconf_config)
+            if "<ok/>" in str(netconf_reply): 
+                return f"Interface loopback {STUDENT_ID} is enabled successfully using Netconf"
+        return f"Cannot enable: Interface loopback {STUDENT_ID}"
+    except: 
+        return f"Cannot enable: Interface loopback {STUDENT_ID}"
 
 # Enable Loopback66070220 interface
-def disable():
+def disable(ip):
     # Define Netconf configuration for disabling Loopback66070220 interface
-    netconf_config = """
+    netconf_config = f"""
         <config>
             <interfaces xmlns="urn:ietf:params:xml:ns:yang:ietf-interfaces">
                 <interface>
-                    <name>Loopback66070220</name>
+                    <name>{INTERFACE_NAME}</name>
                     <type xmlns:ianaift="urn:ietf:params:xml:ns:yang:iana-if-type">ianaift:softwareLoopback</type>
                     <enabled>false</enabled>
                 </interface>
@@ -136,75 +122,67 @@ def disable():
     """
 
     try:
-        # Check if interface Loopback66070220 exists
         checkExist = check_interface_exist()
         if not (checkExist):
-            raise Exception("Interface Loopback66070220 doesn't exist")
+            raise Exception(f"Cannot shutdown: Interface loopback {STUDENT_ID}")
+        with connect(ip) as m:
+            netconf_reply = m.edit_config(target="running", config=netconf_config)
+            if "<ok/>" in str(netconf_reply): 
+                return f"Interface loopback {STUDENT_ID} is shutdowned successfully using Netconf"
+        return f"Cannot shutdown: Interface loopback {STUDENT_ID}"
+    except: 
+        return f"Cannot shutdown: Interface loopback {STUDENT_ID}"
 
-        # Apply Netconf edit-config operation to disable the interface
-        netconf_reply = netconf_edit_config(netconf_config)
-        xml_data = netconf_reply.xml
-        print(xml_data)
-        if '<ok/>' in xml_data:
-            return "Interface loopback 66070220 is shutdowned successfully"
-    except:
-        print("Error!")
-        return "Cannot shutdown: Interface loopback 66070220"
+
 
 # Get status of Loopback66070220 interface
-def status():
+def status(ip):
     # Define Netconf filter to get interfaces-state information for Loopback66070220
-    netconf_filter = """
+    netconf_filter = f"""
         <filter>
             <interfaces-state xmlns="urn:ietf:params:xml:ns:yang:ietf-interfaces">
-                <interface><name>Loopback66070220</name></interface>
+                <interface><name>{INTERFACE_NAME}</name></interface>
             </interfaces-state>
         </filter>
     """
 
     try:
-        # Use Netconf operational operation to get interfaces-state information
-        netconf_reply = m.get(filter=netconf_filter)
-        print(netconf_reply)
-        netconf_reply_dict = xmltodict.parse(netconf_reply.xml)
-
-        # if there data return from netconf_reply_dict is not null, the operation-state of interface loopback is returned
-        if not (netconf_reply_dict["rpc-reply"]["data"] == None):
-            # extract admin_status and oper_status from netconf_reply_dict
-            admin_status = netconf_reply_dict["rpc-reply"]["data"]["interfaces-state"]["interface"]["admin-status"]
-            oper_status = netconf_reply_dict["rpc-reply"]["data"]["interfaces-state"]["interface"]["oper-status"]
-            if admin_status == 'up' and oper_status == 'up':
-                return "Interface loopback 66070123 is enabled"
-            elif admin_status == 'down' and oper_status == 'down':
-                return "Interface loopback 66070123 is disabled"
-        else: # no operation-state data
-            return "No Interface loopback 66070123"
-    except:
-       print("Error!")
-
+        checkExist = check_interface_exist()
+        if not (checkExist):
+            raise Exception(f"No Interface loopback {STUDENT_ID} (checked by Netconf)")
+        with connect(ip) as m:
+            netconf_reply = m.get(filter=netconf_filter)
+            netconf_reply_dict = xmltodict.parse(netconf_reply.xml)
+            if not (netconf_reply_dict["rpc-reply"]["data"] == None):
+                admin_status = netconf_reply_dict["rpc-reply"]["data"]["interfaces-state"]["interface"]["admin-status"]
+                oper_status = netconf_reply_dict["rpc-reply"]["data"]["interfaces-state"]["interface"]["oper-status"]
+                if admin_status == 'up' and oper_status == 'up':
+                    status = "enabled"
+                elif admin_status == 'down' and oper_status == 'down':
+                    status = "disabled"
+                return f"Interface loopback {STUDENT_ID} is {status} (checked by Netconf)"
+            else:
+                return f"No Interface loopback {STUDENT_ID} (checked by Netconf)"
+    except: 
+        return f"No Interface loopback {STUDENT_ID} (checked by Netconf)"
 
 # --------------------------------------------------------------
 # Helper functions
 # --------------------------------------------------------------
 
-# Applying Netconf edit-config operation
-def netconf_edit_config(netconf_config):
-    return  m.edit_config(target="running", config=netconf_config)
-
-# Getting configuration data using Netconf get-config operation
-def netconf_get_config(netconf_config):
-    return m.get_config(source="running", filter=netconf_config)
-
 # Check if interface Loopback66070220 exists
 # Returns: True if exists, False otherwise
-def check_interface_exist():
-    findInterface = """
+def check_interface_exist(ip):
+    findInterface = f"""
         <filter>
             <interfaces xmlns="urn:ietf:params:xml:ns:yang:ietf-interfaces">
-                <interface><name>Loopback66070220</name></interface>
+                <interface><name>{INTERFACE_NAME}</name></interface>
             </interfaces>
         </filter>
     """
-    
-    interfaceResult = netconf_get_config(findInterface).xml
-    return ("Loopback66070220" in interfaceResult)
+    try:
+        with connect(ip) as m:
+            interfaceResult = m.get_config(source="running", filter=findInterface).xml
+            return (INTERFACE_NAME in interfaceResult)
+    except: 
+        return False
