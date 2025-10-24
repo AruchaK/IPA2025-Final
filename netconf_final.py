@@ -42,8 +42,8 @@ def create(ip):
     """
 
     try:
-        checkExist = check_interface_exist()
-        if not (checkExist):
+        checkExist = check_interface_exist(ip)
+        if (checkExist):
             raise Exception(f"Cannot create: Interface loopback {STUDENT_ID}")
         with connect(ip) as m:
             netconf_reply = m.edit_config(target="running", config=netconf_config)
@@ -68,7 +68,7 @@ def delete(ip):
     """
 
     try:
-        checkExist = check_interface_exist()
+        checkExist = check_interface_exist(ip)
         if not (checkExist):
             raise Exception(f"Cannot delete: Interface loopback {STUDENT_ID}")
         with connect(ip) as m:
@@ -95,7 +95,7 @@ def enable(ip):
     """
 
     try:
-        checkExist = check_interface_exist()
+        checkExist = check_interface_exist(ip)
         if not (checkExist):
             raise Exception(f"Cannot enable: Interface loopback {STUDENT_ID}")
         with connect(ip) as m:
@@ -122,7 +122,7 @@ def disable(ip):
     """
 
     try:
-        checkExist = check_interface_exist()
+        checkExist = check_interface_exist(ip)
         if not (checkExist):
             raise Exception(f"Cannot shutdown: Interface loopback {STUDENT_ID}")
         with connect(ip) as m:
@@ -147,7 +147,7 @@ def status(ip):
     """
 
     try:
-        checkExist = check_interface_exist()
+        checkExist = check_interface_exist(ip)
         if not (checkExist):
             raise Exception(f"No Interface loopback {STUDENT_ID} (checked by Netconf)")
         with connect(ip) as m:
