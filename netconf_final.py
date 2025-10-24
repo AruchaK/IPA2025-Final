@@ -98,6 +98,11 @@ def enable(ip):
         checkExist = check_interface_exist(ip)
         if not (checkExist):
             raise Exception(f"Cannot enable: Interface loopback {STUDENT_ID}")
+
+        current_status = get_interface_status(ip)
+        if current_status and current_status['admin'] == 'up' and current_status['oper'] == 'up':
+            return f"Cannot enable: Interface loopback {STUDENT_ID}"
+
         with connect(ip) as m:
             netconf_reply = m.edit_config(target="running", config=netconf_config)
             if "<ok/>" in str(netconf_reply): 
@@ -125,6 +130,11 @@ def disable(ip):
         checkExist = check_interface_exist(ip)
         if not (checkExist):
             raise Exception(f"Cannot shutdown: Interface loopback {STUDENT_ID}")
+
+        current_status = get_interface_status(ip)
+        if current_status and current_status['admin'] == 'down' and current_status['oper'] == 'up':
+            return f"Cannot enable: Interface loopback {STUDENT_ID}"
+
         with connect(ip) as m:
             netconf_reply = m.edit_config(target="running", config=netconf_config)
             if "<ok/>" in str(netconf_reply): 
@@ -186,3 +196,24 @@ def check_interface_exist(ip):
             return (INTERFACE_NAME in interfaceResult)
     except: 
         return False
+
+def get_interface_status(ip):
+    netconf_filter = f"""
+        <filter>
+            <interfaces-state xmlns="urn:ietf:params:xml:ns:yang:ietf-interfaces">
+                <interface><name>{INTERFACE_NAME}</name></interface>
+            </interfaces-state>
+        </filter>
+    """
+
+    try:
+        with connect(ip) as m:
+            netconf_reply = m.get(filter=netconf_filter)
+            netconf_reply_dict = xmltodict.parse(netconf_reply.xml)
+            if not (netconf_reply_dict["rpc-reply"]["data"] == None):
+                admin_status = netconf_reply_dict["rpc-reply"]["data"]["interfaces-state"]["interface"]["admin-status"]
+                oper_status = netconf_reply_dict["rpc-reply"]["data"]["interfaces-state"]["interface"]["oper-status"]
+                return {'admin': admin_status, 'oper': oper_status}
+        return None
+    except:
+        return None
