@@ -144,28 +144,28 @@ while True:
             else:
                 if current_method == Method.RESTCONF:
                     if command == "create":
-                        responseMessage = restconf_final.create()
+                        responseMessage = restconf_final.create(ip)
                     elif command == "delete":
-                        responseMessage = restconf_final.delete()
+                        responseMessage = restconf_final.delete(ip)
                     elif command == "enable":
-                        responseMessage = restconf_final.enable()
+                        responseMessage = restconf_final.enable(ip)
                     elif command == "disable":
-                        responseMessage = restconf_final.disable()
+                        responseMessage = restconf_final.disable(ip)
                     elif command == "status":
-                        responseMessage = restconf_final.status()
+                        responseMessage = restconf_final.status(ip)
                     else:
                         responseMessage = "Error: Unknown command"
                 elif current_method == Method.NETCONF:
                     if command == "create":
-                        responseMessage = netconf_final.create()
+                        responseMessage = netconf_final.create(ip)
                     elif command == "delete":
-                        responseMessage = netconf_final.delete()
+                        responseMessage = netconf_final.delete(ip)
                     elif command == "enable":
-                        responseMessage = netconf_final.enable()
+                        responseMessage = netconf_final.enable(ip)
                     elif command == "disable":
-                        responseMessage = netconf_final.disable()
+                        responseMessage = netconf_final.disable(ip)
                     elif command == "status":
-                        responseMessage = netconf_final.status()
+                        responseMessage = netconf_final.status(ip)
                     else:
                         responseMessage = "Error: Unknown command"
                 elif command == "gigabit_status":
