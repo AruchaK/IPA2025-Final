@@ -16,3 +16,12 @@ def set_motd(host_ip, message):
         "--limit", host_ip,
         "-e", f"motd_message='{message}'"
     ]
+
+    try:
+        process = subprocess.run(command_args, capture_output=True, text=True, check=True, timeout=30)
+        if 'failed=0' in process.stdout:
+            return "Ok: success"
+        else:
+            return "Error: Failed to set MOTD"
+    except:
+        return "Error: Failed to set MOTD"
