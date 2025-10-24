@@ -8,11 +8,11 @@ load_dotenv()
 ROUTER_USER = os.environ.get("ROUTER_USER")
 ROUTER_PASS = os.environ.get("ROUTER_PASS")
 
-def get_motd(host_ip):
+def get_motd(ip):
 
     device_params = {
         "device_type": "cisco_ios",
-        "host": host_ip,
+        "host": ip,
         "username": ROUTER_USER,
         "password": ROUTER_PASS,
     }

@@ -16,8 +16,8 @@ from enum import Enum
 
 import restconf_final
 import netconf_final
-from netmiko_final import gigabit_status
-from ansible_final import showrun
+from netmiko_final import get_motd
+from ansible_banner import set_motd
 import glob
 
 #######################################################################################
@@ -168,26 +168,20 @@ while True:
                         responseMessage = netconf_final.status(ip)
                     else:
                         responseMessage = "Error: Unknown command"
-                elif command == "gigabit_status":
-                    responseMessage = gigabit_status()
-                elif command == "showrun":
-                    responseMessage = showrun()
+                elif command == "motd":
+                    responseMessage = get_motd(ip)
+        if len(parts) >= 4:
+            ip = parts[1]
+            command = parts[2]
+            motd_message = " ".join(parts[3:])
 
-        if len(parts) > 1 and parts[-1] == "showrun" and responseMessage == 'ok':
-            filename = glob.glob("show_run_*.txt")
-            filename = max(filename, key=os.path.getctime)
-            fileobject = open(filename, "rb")
-            filetype = "text/plain"
-            postData = {
-                "roomId": roomIdToGetMessages,
-                "text": "show running config",
-                "files": (filename, fileobject, filetype),
-            }
-            postData = MultipartEncoder(postData)
-            HTTPHeaders = {
-                "Authorization": "Bearer " + ACCESS_TOKEN,
-                "Content-Type": postData.content_type,
-            }
+            if not validate_ip(ip):
+                responseMessage = "Error: IP out of range"
+            else:
+                if command == "motd":
+                    responseMessage = set_motd(ip, motd_message)
+                else:
+                    responseMessage = "Error: Unknown command"
         # other commands only send text, or no attached file.
         else:
             postData =  {"roomId": roomIdToGetMessages, "text": responseMessage}
