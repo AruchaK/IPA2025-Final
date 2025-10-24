@@ -17,16 +17,16 @@ ROUTER_USER = os.environ.get("ROUTER_USER", "admin")
 ROUTER_PASS = os.environ.get("ROUTER_PASS", "cisco")
 basicauth = (ROUTER_USER, ROUTER_PASS)
 
-studentID = "66070220"
-interfaceName = f"Loopback{studentID}"
+STUDENT_ID = "66070220"
+INTERFACE_NAME = f"Loopback{STUDENT_ID}"
 
 def get_call_url(ip):
     api_url = f"https://{ip}/restconf/data/ietf-interfaces:interfaces"
-    call_url = f"{api_url}/interface={interfaceName}"
+    call_url = f"{api_url}/interface={INTERFACE_NAME}"
     return call_url
 
 def get_url_status(ip):
-    api_url_check_status = f"https://{ip}/restconf/data/ietf-interfaces:interfaces-state/interface={interfaceName}"
+    api_url_check_status = f"https://{ip}/restconf/data/ietf-interfaces:interfaces-state/interface={INTERFACE_NAME}"
     return api_url_check_status
 
 def create(ip):
@@ -34,11 +34,11 @@ def create(ip):
 
     isExist = check_interface_is_exist(ip)
     if isExist:
-        return "Cannot create: Interface loopback {}".format(studentID)
+        return "Cannot create: Interface loopback {}".format(STUDENT_ID)
 
     yangConfig = {
             "ietf-interfaces:interface": {
-            "name": interfaceName,
+            "name": INTERFACE_NAME,
             "type": "iana-if-type:softwareLoopback",
             "enabled": True,
             "ietf-ip:ipv4": {
@@ -62,13 +62,13 @@ def create(ip):
     )
     
     if (resp.status_code == 204):
-        return "Cannot create: Interface loopback {}".format(studentID)
+        return "Cannot create: Interface loopback {}".format(STUDENT_ID)
     elif (resp.status_code >= 200 and resp.status_code <= 299):
         print("STATUS OK: {}".format(resp.status_code))
-        return "Interface loopback {} is created successfully using Restconf".format(studentID)
+        return "Interface loopback {} is created successfully using Restconf".format(STUDENT_ID)
     else:
         print('Error. Status Code: {}'.format(resp.status_code))
-        return "Cannot create: Interface loopback {}".format(studentID)
+        return "Cannot create: Interface loopback {}".format(STUDENT_ID)
 
 
 def delete(ip):
@@ -76,7 +76,7 @@ def delete(ip):
 
     isExist = check_interface_is_exist(ip)
     if not isExist:
-        return "Cannot delete: Interface loopback {}".format(studentID)
+        return "Cannot delete: Interface loopback {}".format(STUDENT_ID)
 
     resp = requests.delete(
         call_url, 
@@ -87,10 +87,10 @@ def delete(ip):
 
     if(resp.status_code >= 200 and resp.status_code <= 299):
         print("STATUS OK: {}".format(resp.status_code))
-        return "Interface loopback {} is deleted successfully using Restconf".format(studentID)
+        return "Interface loopback {} is deleted successfully using Restconf".format(STUDENT_ID)
     else:
         print('Error. Status Code: {}'.format(resp.status_code))
-        return "Cannot delete: Interface loopback {}".format(studentID)
+        return "Cannot delete: Interface loopback {}".format(STUDENT_ID)
 
 
 def enable(ip):
@@ -98,15 +98,15 @@ def enable(ip):
 
     isExist = check_interface_is_exist(ip)
     if not (isExist):
-        return "Cannot enable: Interface loopback {}".format(studentID)
+        return "Cannot enable: Interface loopback {}".format(STUDENT_ID)
 
     current_status = get_interface_status(ip)
     if current_status and current_status['admin'] == 'up' and current_status['oper'] == 'up':
-        return "Cannot enable: Interface loopback {}".format(studentID)
+        return "Cannot enable: Interface loopback {}".format(STUDENT_ID)
 
     yangConfig = {
         "ietf-interfaces:interface": {
-            "name": interfaceName,
+            "name": INTERFACE_NAME,
             "type": "iana-if-type:softwareLoopback",
             "enabled": True,
         }
@@ -122,10 +122,10 @@ def enable(ip):
 
     if(resp.status_code >= 200 and resp.status_code <= 299):
         print("STATUS OK: {}".format(resp.status_code))
-        return "Interface loopback {} is enabled successfully using Restconf".format(studentID)
+        return "Interface loopback {} is enabled successfully using Restconf".format(STUDENT_ID)
     else:
         print('Error. Status Code: {}'.format(resp.status_code))
-        return "Cannot enable: Interface loopback {}".format(studentID)
+        return "Cannot enable: Interface loopback {}".format(STUDENT_ID)
 
 
 def disable(ip):
@@ -133,15 +133,15 @@ def disable(ip):
 
     isExist = check_interface_is_exist(ip)
     if not (isExist):
-        return "Cannot enable: Interface loopback {}".format(studentID)
+        return "Cannot enable: Interface loopback {}".format(STUDENT_ID)
 
     current_status = get_interface_status(ip)
     if current_status and current_status['admin'] == 'down' and current_status['oper'] == 'down':
-        return "Cannot shutdown: Interface loopback {} (checked by Restconf)".format(studentID)
+        return "Cannot shutdown: Interface loopback {} (checked by Restconf)".format(STUDENT_ID)
 
     yangConfig = {
         "ietf-interfaces:interface": {
-            "name": interfaceName,
+            "name": INTERFACE_NAME,
             "type": "iana-if-type:softwareLoopback",
             "enabled": False,
         }
@@ -157,10 +157,10 @@ def disable(ip):
 
     if(resp.status_code >= 200 and resp.status_code <= 299):
         print("STATUS OK: {}".format(resp.status_code))
-        return "Interface loopback {} is shutdowned successfully using Restconf".format(studentID)
+        return "Interface loopback {} is shutdowned successfully using Restconf".format(STUDENT_ID)
     else:
         print('Error. Status Code: {}'.format(resp.status_code))
-        return "Cannot shutdown: Interface loopback {}".format(studentID)
+        return "Cannot shutdown: Interface loopback {}".format(STUDENT_ID)
 
 
 def status(ip):
@@ -179,12 +179,12 @@ def status(ip):
         admin_status = response_json["ietf-interfaces:interface"]["admin-status"]
         oper_status = response_json["ietf-interfaces:interface"]["oper-status"]
         if admin_status == 'up' and oper_status == 'up':
-            return "Interface loopback {} is enabled".format(studentID)
+            return "Interface loopback {} is enabled".format(STUDENT_ID)
         elif admin_status == 'down' and oper_status == 'down':
-            return "Interface loopback {} is disabled".format(studentID)
+            return "Interface loopback {} is disabled".format(STUDENT_ID)
     elif(resp.status_code == 404):
         print("STATUS NOT FOUND: {}".format(resp.status_code))
-        return "No Interface loopback {}".format(studentID)
+        return "No Interface loopback {}".format(STUDENT_ID)
     else:
         print('Error. Status Code: {}'.format(resp.status_code))
 
