@@ -179,12 +179,12 @@ def status(ip):
         admin_status = response_json["ietf-interfaces:interface"]["admin-status"]
         oper_status = response_json["ietf-interfaces:interface"]["oper-status"]
         if admin_status == 'up' and oper_status == 'up':
-            return "Interface loopback {} is enabled".format(STUDENT_ID)
+            return "Interface loopback {} is enabled (checked by Restconf)".format(STUDENT_ID)
         elif admin_status == 'down' and oper_status == 'down':
-            return "Interface loopback {} is disabled".format(STUDENT_ID)
+            return "Interface loopback {} is disabled (checked by Restconf)".format(STUDENT_ID)
     elif(resp.status_code == 404):
         print("STATUS NOT FOUND: {}".format(resp.status_code))
-        return "No Interface loopback {}".format(STUDENT_ID)
+        return "No Interface loopback {} (checked by Restconf)".format(STUDENT_ID)
     else:
         print('Error. Status Code: {}'.format(resp.status_code))
 

@@ -126,6 +126,8 @@ while True:
             elif method_str == "netconf":
                 current_method = Method.NETCONF
                 responseMessage = "Ok: Netconf"
+            elif current_method is None:
+                responseMessage = "Error: No method specified"
             elif is_ip(method_str):
                 responseMessage = "Error: No command found"
             elif method_str in ["create", "delete", "enable", "disable", "status", "showrun", "gigabit_status"]:
@@ -137,10 +139,10 @@ while True:
             ip = parts[1]
             command = parts[2]
 
-            if not validate_ip(ip):
-                responseMessage = "Error: IP out of range"
-            elif command == "motd":
+            if command == "motd":
                 responseMessage = get_motd(ip)
+            elif not validate_ip(ip):
+                responseMessage = "Error: IP out of range"
             elif current_method is None:
                 responseMessage = "Error: No method specified"
             else:

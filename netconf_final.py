@@ -132,8 +132,8 @@ def disable(ip):
             raise Exception(f"Cannot shutdown: Interface loopback {STUDENT_ID}")
 
         current_status = get_interface_status(ip)
-        if current_status and current_status['admin'] == 'down' and current_status['oper'] == 'up':
-            return f"Cannot enable: Interface loopback {STUDENT_ID}"
+        if current_status and current_status['admin'] == 'down' and current_status['oper'] == 'down':
+            return f"Cannot enable: Interface loopback {STUDENT_ID} (checked by Netconf)"
 
         with connect(ip) as m:
             netconf_reply = m.edit_config(target="running", config=netconf_config)
